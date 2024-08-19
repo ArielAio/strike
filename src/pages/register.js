@@ -40,9 +40,9 @@ export default function Home() {
                 </button>
                 <h1 className="text-xl font-bold text-center">Strike System</h1>
             </header>
-            <main className="flex-grow flex items-center justify-center">
-                <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                    <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Cadastro de Usuário</h1>
+            <main className="flex-grow flex items-center justify-center px-4">
+                <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md">
+                    <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-gray-800">Cadastro de Usuário</h1>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <input
                             type="text"

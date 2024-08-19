@@ -24,7 +24,6 @@ export default function Payments() {
         fetchUsers();
     }, []);
 
-    // Função para calcular a data de vencimento com base na data de pagamento
     useEffect(() => {
         if (paymentDate) {
             const paymentDateObj = new Date(paymentDate);
@@ -65,7 +64,7 @@ export default function Payments() {
                 <h1 className="text-xl font-bold text-center">Strike System</h1>
             </header>
             <main className="flex-grow flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+                <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <select
                             value={userId}
