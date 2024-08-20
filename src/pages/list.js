@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../src/firebase';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import AuthRoute from '../../src/AuthRoute';
 import Calendar from 'react-calendar';
@@ -30,7 +30,7 @@ export default function List() {
                             orderBy('paymentDate', 'desc')
                         )
                     );
-                    const payments = paymentsSnapshot.docs.map(doc => doc.data());
+                    const payments = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     return { id: userDoc.id, ...userDoc.data(), payments };
                 }));
 
@@ -78,6 +78,44 @@ export default function List() {
         setModalIsOpen(true);
     };
 
+    const getCardColor = (payments) => {
+        if (!payments || payments.length === 0) return 'bg-white';
+
+        const currentDate = new Date();
+        const lastPayment = payments[0];
+        const expiration = new Date(lastPayment.expirationDate);
+        const daysRemaining = Math.ceil((expiration - currentDate) / (1000 * 60 * 60 * 24));
+
+        console.log("pagamentos: ", daysRemaining)
+
+        if (daysRemaining < 0) {
+            return 'bg-red-500'; // Atrasado
+        } else if (daysRemaining <= 5) {
+            return 'bg-yellow-300'; // Faltando 5 dias ou menos
+        } else if (daysRemaining > 5) {
+            return 'bg-green-300'; // Mais de 25 dias restantes
+        } else {
+            return 'bg-white'; // Neutro
+        }
+    };
+
+    const deletePayment = async (paymentId) => {
+        try {
+            await deleteDoc(doc(db, 'payments', paymentId));
+            alert('Pagamento deletado com sucesso!');
+            // Atualizar a lista de usuários após a exclusão
+            const updatedUsers = users.map(user => ({
+                ...user,
+                payments: user.payments.filter(payment => payment.id !== paymentId),
+            }));
+            setUsers(updatedUsers);
+            updateCalendarEvents(updatedUsers);
+        } catch (error) {
+            console.error('Erro ao deletar pagamento:', error);
+            alert('Erro ao deletar o pagamento.');
+        }
+    };
+
     return (
         <AuthRoute>
             <div className="min-h-screen flex flex-col bg-gray-100">
@@ -96,7 +134,7 @@ export default function List() {
                         {users.length > 0 ? (
                             <ul className="space-y-4">
                                 {users.map(user => (
-                                    <li key={user.id} className="p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                    <li key={user.id} className={`p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${getCardColor(user.payments)}`}>
                                         <div onClick={() => toggleExpand(user.id)} className="cursor-pointer mb-2">
                                             <strong className="text-gray-700">Nome:</strong> {user.name} <br />
                                             <strong className="text-gray-700">Email:</strong> {user.email} <br />
@@ -111,6 +149,12 @@ export default function List() {
                                                             <li key={index} className="p-2 border border-gray-200 rounded-md">
                                                                 <strong className="text-gray-700">Data do Pagamento:</strong> {new Date(payment.paymentDate).toLocaleDateString('pt-BR')} <br />
                                                                 <strong className="text-gray-700">Data de Vencimento:</strong> {new Date(payment.expirationDate).toLocaleDateString('pt-BR')}
+                                                                <button
+                                                                    onClick={() => deletePayment(payment.id)}
+                                                                    className="ml-4 text-red-600 hover:text-red-800"
+                                                                >
+                                                                    Deletar
+                                                                </button>
                                                             </li>
                                                         ))}
                                                     </ul>
