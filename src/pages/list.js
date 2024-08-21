@@ -195,21 +195,26 @@ export default function List() {
         const filtered = filteredUsers.filter(user =>
             user.name.toLowerCase().includes(searchTerm.toLowerCase())
         ).slice(startIndex, endIndex);
-        setFilteredUsers(filtered);
     };
 
     const handleFilterChange = (filter) => {
+        setCurrentPage(1);
+        setFilterType(filter);
+    };
+
+    const [filterType, setFilterType] = useState("");
+
+    useEffect(() => {
         let filteredList = users;
-        if (filter === "overdue") {
+        if (filterType === "overdue") {
             filteredList = overdueUsers;
-        } else if (filter === "dueSoon") {
+        } else if (filterType === "dueSoon") {
             filteredList = dueSoonUsers;
-        } else if (filter === "safe") {
+        } else if (filterType === "safe") {
             filteredList = safeUsers;
         }
         setFilteredUsers(filteredList);
-        setCurrentPage(1);
-    };
+    }, [currentPage, filterType]);
 
     return (
         <AuthRoute>
@@ -348,7 +353,13 @@ export default function List() {
                         )}
                         <div className="flex justify-center mt-4">
                             {Array.from({ length: Math.ceil(filteredUsers.length / usersPerPage) }).map((_, index) => (
-                                <button key={index} onClick={() => paginate(index + 1)} className="mx-1 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <button
+                                    key={index}
+                                    onClick={() => paginate(index + 1)}
+                                    className={`mx-1 px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 
+                                    ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-transparent text-blue-500 border border-blue-500'} 
+                                    hover:bg-blue-600 hover:text-white`}
+                                >
                                     {index + 1}
                                 </button>
                             ))}
