@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Modal from 'react-modal';
 
-const EventDetailsModal = ({ modalIsOpen, setModalIsOpen, modalEvents }) => {
+const EventDetailsModal = ({ modalIsOpen, setModalIsOpen, modalEvents = [] }) => {
     return (
         <Modal
             isOpen={modalIsOpen}
@@ -18,7 +18,7 @@ const EventDetailsModal = ({ modalIsOpen, setModalIsOpen, modalEvents }) => {
                 transition={{ duration: 0.3 }}
             >
                 <h2 className="text-2xl font-semibold mb-4 text-gray-800">Detalhes do Evento</h2>
-                {modalEvents.length > 0 ? (
+                {modalEvents?.length > 0 ? (
                     <ul className="space-y-4">
                         {modalEvents.map((event, index) => (
                             <motion.li
