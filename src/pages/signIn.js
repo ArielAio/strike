@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { auth } from '../../src/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'next/router';
+import Header from '@/Header';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -26,9 +27,7 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
-            <header className="bg-blue-500 p-4 text-white shadow-md">
-                <h1 className="text-xl font-bold text-center">Strike System</h1>
-            </header>
+            <Header />
             <main className="flex-grow flex items-center justify-center p-4">
                 <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
                     <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login de Administrador</h2>
@@ -39,7 +38,7 @@ export default function Login() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         />
                         <input
                             type="password"
@@ -47,17 +46,23 @@ export default function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         />
                         <button
                             type="submit"
-                            className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full py-2 px-4 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         >
                             Entrar
                         </button>
                     </form>
                 </div>
             </main>
+            <button
+                onClick={handleBackClick}
+                className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
+            >
+                Voltar
+            </button>
         </div>
     );
 }

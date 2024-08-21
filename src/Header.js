@@ -4,19 +4,19 @@ import LogoutButton from './LogoutButton';
 
 export default function Header() {
     return (
-        <header className="bg-orange-600 p-4 text-white shadow-md relative flex items-center" style={{ height: '80px' }}>
-            <div className="absolute left-1/2 transform -translate-x-1/2">
+        <header className="bg-orange-500 p-4 text-black shadow-md flex items-center justify-between" style={{ height: '80px' }}>
+            <div className="flex-grow">
                 <Link href="/" passHref>
                     <Image
                         src="/images/strike-logo.png"
                         alt="Logo"
-                        width={250}
-                        height={60}
+                        width={200}
+                        height={50}
                         className="object-contain cursor-pointer"
                     />
                 </Link>
             </div>
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <div className="flex-none">
                 <LogoutButton />
             </div>
         </header>
