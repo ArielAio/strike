@@ -6,11 +6,14 @@ import AuthRoute from '../../src/AuthRoute';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Modal from 'react-modal';
+import Header from '@/Header';
 
 Modal.setAppElement('#__next');
 
 export default function List() {
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [expandedUserId, setExpandedUserId] = useState(null);
     const [date, setDate] = useState(new Date());
     const [events, setEvents] = useState([]);
@@ -35,7 +38,10 @@ export default function List() {
                 }));
 
                 setUsers(usersList);
+                setFilteredUsers(usersList);
                 updateCalendarEvents(usersList);
+
+
             } catch (error) {
                 console.error('Error fetching users and payments:', error);
             }
@@ -44,8 +50,19 @@ export default function List() {
         fetchUsersWithPayments();
     }, []);
 
+    useEffect(() => {
+        const filtered = users.filter(user =>
+            user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredUsers(filtered);
+    }, [searchTerm, users]);
+
     const handleBackClick = () => {
         router.push('/');
+    };
+
+    const handleAddPaymentClick = () => {
+        router.push('/payments');
     };
 
     const toggleExpand = (userId) => {
@@ -86,16 +103,24 @@ export default function List() {
         const expiration = new Date(lastPayment.expirationDate);
         const daysRemaining = Math.ceil((expiration - currentDate) / (1000 * 60 * 60 * 24));
 
-        console.log("pagamentos: ", daysRemaining)
-
         if (daysRemaining < 0) {
-            return 'bg-red-500'; // Atrasado
+            return 'bg-red-500';
         } else if (daysRemaining <= 5) {
-            return 'bg-yellow-300'; // Faltando 5 dias ou menos
-        } else if (daysRemaining > 5) {
-            return 'bg-green-300'; // Mais de 25 dias restantes
+            return 'bg-yellow-300';
         } else {
-            return 'bg-white'; // Neutro
+            return 'bg-green-300'; 
+        }
+    };
+
+    const deleteUser = async (userId) => {
+        try {
+            await deleteDoc(doc(db, 'users', userId));
+            alert('Usuário deletado com sucesso!');
+            setUsers(users.filter(user => user.id !== userId));
+            setFilteredUsers(filteredUsers.filter(user => user.id !== userId));
+        } catch (error) {
+            console.error('Erro ao deletar usuário:', error);
+            alert('Erro ao deletar o usuário.');
         }
     };
 
@@ -103,12 +128,14 @@ export default function List() {
         try {
             await deleteDoc(doc(db, 'payments', paymentId));
             alert('Pagamento deletado com sucesso!');
-            // Atualizar a lista de usuários após a exclusão
             const updatedUsers = users.map(user => ({
                 ...user,
                 payments: user.payments.filter(payment => payment.id !== paymentId),
             }));
             setUsers(updatedUsers);
+            setFilteredUsers(updatedUsers.filter(user =>
+                user.name.toLowerCase().includes(searchTerm.toLowerCase())
+            ));
             updateCalendarEvents(updatedUsers);
         } catch (error) {
             console.error('Erro ao deletar pagamento:', error);
@@ -116,45 +143,76 @@ export default function List() {
         }
     };
 
+    const redirectToEditPage = (type, id) => {
+        router.push(`/edit/${type}/${id}`);
+    };
+
     return (
         <AuthRoute>
             <div className="min-h-screen flex flex-col bg-gray-100">
-                <header className="bg-blue-600 text-white py-4 shadow-md flex justify-center items-center relative">
-                    <button
-                        onClick={handleBackClick}
-                        className="absolute left-4 bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    >
-                        Voltar
-                    </button>
-                    <h1 className="text-2xl font-bold">Strike System</h1>
-                </header>
+                <Header />
                 <main className="flex-grow flex flex-col items-center p-4">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl">
                         <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">Usuários e Pagamentos</h2>
-                        {users.length > 0 ? (
+                        <input
+                            type="text"
+                            placeholder="Pesquisar usuário por nome"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
+                        />
+                        <button
+                            onClick={handleAddPaymentClick}
+                            className="mb-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
+                        >
+                            Cadastrar Pagamento
+                        </button>
+                        {filteredUsers.length > 0 ? (
                             <ul className="space-y-4">
-                                {users.map(user => (
+                                {filteredUsers.map(user => (
                                     <li key={user.id} className={`p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${getCardColor(user.payments)}`}>
                                         <div onClick={() => toggleExpand(user.id)} className="cursor-pointer mb-2">
                                             <strong className="text-gray-700">Nome:</strong> {user.name} <br />
                                             <strong className="text-gray-700">Email:</strong> {user.email} <br />
                                             <strong className="text-gray-700">Telefone:</strong> {user.phone}
                                         </div>
+                                        <div className="flex justify-end space-x-2 mt-2">
+                                            <button
+                                                onClick={() => redirectToEditPage('user', user.id)}
+                                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                onClick={() => deleteUser(user.id)}
+                                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                                            >
+                                                Deletar
+                                            </button>
+                                        </div>
                                         {expandedUserId === user.id && (
-                                            <div>
+                                            <div className="mt-4">
                                                 <h3 className="text-lg font-semibold mb-2">Pagamentos:</h3>
                                                 {user.payments.length > 0 ? (
                                                     <ul className="space-y-2">
-                                                        {user.payments.map((payment, index) => (
-                                                            <li key={index} className="p-2 border border-gray-200 rounded-md">
+                                                        {user.payments.map(payment => (
+                                                            <li key={payment.id} className="p-2 border border-gray-200 rounded-md">
                                                                 <strong className="text-gray-700">Data do Pagamento:</strong> {new Date(payment.paymentDate).toLocaleDateString('pt-BR')} <br />
                                                                 <strong className="text-gray-700">Data de Vencimento:</strong> {new Date(payment.expirationDate).toLocaleDateString('pt-BR')}
-                                                                <button
-                                                                    onClick={() => deletePayment(payment.id)}
-                                                                    className="ml-4 text-red-600 hover:text-red-800"
-                                                                >
-                                                                    Deletar
-                                                                </button>
+                                                                <div className="flex justify-end space-x-2 mt-2">
+                                                                    <button
+                                                                        onClick={() => redirectToEditPage('payment', payment.id)}
+                                                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                                    >
+                                                                        Editar
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => deletePayment(payment.id)}
+                                                                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+                                                                    >
+                                                                        Deletar
+                                                                    </button>
+                                                                </div>
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -167,62 +225,66 @@ export default function List() {
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-gray-500 text-center">Nenhum usuário encontrado.</p>
+                            <p className="text-gray-500">Nenhum usuário encontrado.</p>
                         )}
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl mt-8 flex flex-col items-center">
-                        <h2 className="text-xl font-semibold mb-4 text-gray-800 text-center">Calendário de Vencimentos</h2>
-                        <div className="w-full flex justify-center">
-                            <Calendar
-                                onChange={handleDateChange}
-                                value={date}
-                                tileContent={({ date, view }) => view === 'month' && getEventTitle(date) && (
-                                    <div className="flex items-center justify-center w-full h-full">
-                                        <div
-                                            className="bg-red-400 rounded-full w-3 h-3 cursor-pointer mb-2"
-                                            onClick={() => openModal(date)}
-                                        />
-                                    </div>
-                                )}
-                                className="rounded-lg border border-gray-300"
-                            />
-                        </div>
-                    </div>
-                </main>
 
-                {/* Modal para Detalhes do Evento */}
-                <Modal
-                    isOpen={modalIsOpen}
-                    onRequestClose={() => setModalIsOpen(false)}
-                    contentLabel="Detalhes do Evento"
-                    className="fixed inset-0 flex items-center justify-center p-4"
-                    overlayClassName="fixed inset-0 bg-gray-800 bg-opacity-75"
-                >
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Detalhes do Evento</h2>
-                        {modalEvents.length > 0 ? (
-                            <ul className="space-y-4">
-                                {modalEvents.map((event, index) => (
-                                    <li key={index} className="p-4 border border-gray-200 rounded-md">
-                                        <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-                                        <ul className="space-y-2">
-                                            {event.details.map((payment, idx) => (
-                                                <li key={idx} className="text-gray-700">
-                                                    <strong>Data de Vencimento:</strong> {new Date(payment.expirationDate).toLocaleDateString('pt-BR')}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500">Nenhum evento para esta data.</p>
-                        )}
-                        <button onClick={() => setModalIsOpen(false)} className="mt-6 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                            Fechar
-                        </button>
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl mt-8 flex flex-col items-center">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800">Calendário</h2>
+                        <Calendar
+                            onChange={handleDateChange}
+                            value={date}
+                            tileContent={({ date, view }) => view === 'month' && getEventTitle(date) && (
+                                <div className="flex items-center justify-center w-full h-full">
+                                    <div
+                                        className="bg-yellow-400 rounded-full w-3 h-3 cursor-pointer mb-2"
+                                        onClick={() => openModal(date)}
+                                    />
+                                </div>
+                            )}
+                            className="rounded-lg border border-gray-300"
+                        />
                     </div>
-                </Modal>
+
+                    <Modal
+                        isOpen={modalIsOpen}
+                        onRequestClose={() => setModalIsOpen(false)}
+                        contentLabel="Detalhes do Evento"
+                        className="fixed inset-0 flex items-center justify-center p-4"
+                        overlayClassName="fixed inset-0 bg-gray-800 bg-opacity-75"
+                    >
+                        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Detalhes do Evento</h2>
+                            {modalEvents.length > 0 ? (
+                                <ul className="space-y-4">
+                                    {modalEvents.map((event, index) => (
+                                        <li key={index} className="p-4 border border-gray-200 rounded-md">
+                                            <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+                                            <ul className="space-y-2">
+                                                {event.details.map((payment, idx) => (
+                                                    <li key={idx} className="text-gray-700">
+                                                        <strong>Data de Vencimento:</strong> {new Date(payment.expirationDate).toLocaleDateString('pt-BR')}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500">Nenhum evento para esta data.</p>
+                            )}
+                            <button onClick={() => setModalIsOpen(false)} className="mt-6 bg-yellow-500 text-black py-2 px-4 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300">
+                                Fechar
+                            </button>
+                        </div>
+                    </Modal>
+                </main>
+                <button
+                    onClick={handleBackClick}
+                    className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
+                >
+                    Voltar
+                </button>
             </div>
         </AuthRoute>
     );

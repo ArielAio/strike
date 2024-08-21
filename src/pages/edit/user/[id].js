@@ -1,29 +1,53 @@
-import { useState } from 'react';
-import { db } from '../../src/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import AuthRoute from '../../src/AuthRoute';
+import { db } from '../../../../src/firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import AuthRoute from '../../../../src/AuthRoute';
 import Header from '@/Header';
 
-export default function Home() {
+export default function EditUser() {
+    const router = useRouter();
+    const { id } = router.query;
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const router = useRouter();
+
+    useEffect(() => {
+        if (id) {
+            const fetchUser = async () => {
+                try {
+                    const userDoc = doc(db, 'users', id);
+                    const userSnapshot = await getDoc(userDoc);
+                    if (userSnapshot.exists()) {
+                        const userData = userSnapshot.data();
+                        setName(userData.name);
+                        setEmail(userData.email);
+                        setPhone(userData.phone);
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar usuário:', error);
+                }
+            };
+
+            fetchUser();
+        }
+    }, [id]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const userRef = await addDoc(collection(db, 'users'), {
+            const userDocRef = doc(db, 'users', id);
+            await updateDoc(userDocRef, {
                 name,
                 email,
                 phone,
             });
-            alert('Usuário cadastrado com sucesso! ID: ' + userRef.id);
+            alert('Usuário atualizado com sucesso!');
+            router.push('/list'); 
         } catch (error) {
-            console.error('Erro ao salvar usuário:', error);
-            alert('Erro ao salvar o usuário.');
+            console.error('Erro ao atualizar usuário:', error);
+            alert('Erro ao atualizar o usuário.');
         }
     };
 
@@ -37,7 +61,7 @@ export default function Home() {
                 <Header />
                 <main className="flex-grow flex items-center justify-center px-4">
                     <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md">
-                        <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-black">Cadastro de Usuário</h1>
+                        <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-black">Editar Usuário</h1>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <input
                                 type="text"
@@ -67,11 +91,17 @@ export default function Home() {
                                 type="submit"
                                 className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
                             >
-                                Cadastrar Usuário
+                                Atualizar Usuário
                             </button>
                         </form>
                     </div>
                 </main>
+                <button
+                    onClick={handleBackClick}
+                    className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
+                >
+                    Voltar
+                </button>
             </div>
         </AuthRoute>
     );

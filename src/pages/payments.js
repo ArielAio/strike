@@ -3,7 +3,7 @@ import { db } from '../../src/firebase';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import AuthRoute from '../../src/AuthRoute';
-
+import Header from '@/Header';
 
 export default function Payments() {
     const [users, setUsers] = useState([]);
@@ -56,17 +56,8 @@ export default function Payments() {
 
     return (
         <AuthRoute>
-
             <div className="min-h-screen flex flex-col bg-gray-100">
-                <header className="bg-blue-500 p-4 text-white shadow-md relative">
-                    <button
-                        onClick={handleBackClick}
-                        className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 absolute left-4 top-1/2 transform -translate-y-1/2"
-                    >
-                        Voltar
-                    </button>
-                    <h1 className="text-xl font-bold text-center">Strike System</h1>
-                </header>
+                <Header />
                 <main className="flex-grow flex items-center justify-center p-4">
                     <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md">
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,7 +65,7 @@ export default function Payments() {
                                 value={userId}
                                 onChange={(e) => setUserId(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
                             >
                                 <option value="">Selecione um Usuário</option>
                                 {users.map(user => (
@@ -89,18 +80,18 @@ export default function Payments() {
                                 value={paymentDate}
                                 onChange={(e) => setPaymentDate(e.target.value)}
                                 required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
                             />
                             <input
                                 type="date"
                                 placeholder="Data de Vencimento"
                                 value={expirationDate}
                                 readOnly
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-200"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-gray-200"
                             />
                             <button
                                 type="submit"
-                                className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full py-2 px-4 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
                             >
                                 Registrar Pagamento
                             </button>
@@ -109,6 +100,5 @@ export default function Payments() {
                 </main>
             </div>
         </AuthRoute>
-
     );
 }
