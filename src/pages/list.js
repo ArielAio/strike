@@ -26,7 +26,7 @@ export default function List() {
     const [dueSoonUsers, setDueSoonUsers] = useState([]);
     const [safeUsers, setSafeUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [usersPerPage] = useState(4); // Defina a quantidade de usuários por página
+    const [usersPerPage] = useState(4);
 
     const router = useRouter();
 
@@ -208,7 +208,7 @@ export default function List() {
             filteredList = safeUsers;
         }
         setFilteredUsers(filteredList);
-        setCurrentPage(1); // Reset to first page when changing filters
+        setCurrentPage(1);
     };
 
     return (
@@ -271,9 +271,15 @@ export default function List() {
                                         whileHover={{ scale: 1.05 }}
                                     >
                                         <div onClick={() => toggleExpand(user.id)} className="cursor-pointer mb-2">
+
                                             <strong className="text-gray-700">Nome:</strong> {user.name} {getPaymentStatus(user.payments)} <br />
-                                            <strong className="text-gray-700">Email:</strong> {user.email} <br />
-                                            <strong className="text-gray-700">Telefone:</strong> {user.phone} <br />
+
+                                            <strong className="text-gray-700">Email: </strong>
+                                            {user.email ? user.email : 'Nenhum email vinculado'} <br />
+
+                                            <strong className="text-gray-700">Telefone: </strong>
+                                            {user.phone ? user.phone : 'Nenhum telefone vinculado'}<br />
+
                                             <strong className="text-gray-700">Cidade:</strong> {user.city} <br />
                                         </div>
                                         <div className="flex justify-end space-x-2 mt-2">
