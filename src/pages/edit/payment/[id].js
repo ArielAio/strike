@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { db } from '../../../../src/firebase';
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import AuthRoute from '../../../../src/AuthRoute';
+import { motion } from 'framer-motion';
 import Header from '@/Header';
 
 export default function EditPayment() {
@@ -69,7 +70,7 @@ export default function EditPayment() {
                 expirationDate,
             });
             alert('Pagamento atualizado com sucesso!');
-            router.push('/list'); 
+            router.push('/list');
         } catch (error) {
             console.error('Erro ao atualizar pagamento:', error);
             alert('Erro ao atualizar o pagamento.');
@@ -85,14 +86,29 @@ export default function EditPayment() {
             <div className="min-h-screen flex flex-col bg-gray-100">
                 <Header />
                 <main className="flex-grow flex items-center justify-center p-4">
-                    <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md">
+                    <motion.div
+                        className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
                         {payment ? (
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <select
+                            <motion.form
+                                onSubmit={handleSubmit}
+                                className="space-y-4"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                            >
+                                <motion.select
                                     value={userId}
                                     onChange={(e) => setUserId(e.target.value)}
                                     required
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.1 }}
+                                    whileFocus={{ scale: 1.05 }}
                                 >
                                     <option value="">Selecione um Usuário</option>
                                     {users.map(user => (
@@ -100,40 +116,58 @@ export default function EditPayment() {
                                             {user.name} ({user.email})
                                         </option>
                                     ))}
-                                </select>
-                                <input
+                                </motion.select>
+                                <motion.input
                                     type="date"
                                     placeholder="Data de Pagamento"
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}
                                     required
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.1 }}
+                                    whileFocus={{ scale: 1.05 }}
                                 />
-                                <input
+                                <motion.input
                                     type="date"
                                     placeholder="Data de Vencimento"
                                     value={expirationDate}
                                     readOnly
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-gray-200"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.1 }}
+                                    whileFocus={{ scale: 1.05 }}
                                 />
-                                <button
+                                <motion.button
                                     type="submit"
                                     className="w-full py-2 px-4 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                    whileHover={{ scale: 1.05 }}
+                                    transition={{ duration: 0.3 }}
                                 >
                                     Atualizar Pagamento
-                                </button>
-                            </form>
+                                </motion.button>
+                            </motion.form>
                         ) : (
-                            <p>Carregando...</p>
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                Carregando...
+                            </motion.p>
                         )}
-                    </div>
+                    </motion.div>
                 </main>
-                <button
+                <motion.button
                     onClick={handleBackClick}
-                    className="fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
+                    className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
                 >
                     Voltar
-                </button>
+                </motion.button>
             </div>
         </AuthRoute>
     );

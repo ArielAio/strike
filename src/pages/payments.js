@@ -29,9 +29,19 @@ export default function Payments() {
 
     useEffect(() => {
         if (paymentDate) {
-            const paymentDateObj = new Date(paymentDate);
-            paymentDateObj.setDate(paymentDateObj.getDate() + 30);
-            setExpirationDate(paymentDateObj.toISOString().split('T')[0]);
+            const calculateExpirationDate = (dateString) => {
+                const [year, month, day] = dateString.split('-').map(Number);
+                const newDate = new Date(year, month - 1, day);
+                newDate.setDate(newDate.getDate() + 30);
+
+                const expirationYear = newDate.getUTCFullYear();
+                const expirationMonth = String(newDate.getUTCMonth() + 1).padStart(2, '0');
+                const expirationDay = String(newDate.getUTCDate()).padStart(2, '0');
+
+                return `${expirationYear}-${expirationMonth}-${expirationDay}`;
+            };
+
+            setExpirationDate(calculateExpirationDate(paymentDate));
         }
     }, [paymentDate]);
 
@@ -66,7 +76,7 @@ export default function Payments() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                         <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-black">
+                        <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-black">
                             Registrar Pagamento
                         </h1>
                         <motion.form
@@ -84,6 +94,7 @@ export default function Payments() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5 }}
+                                whileFocus={{ scale: 1.05 }}
                             >
                                 <option value="">Selecione um Usuário</option>
                                 {users.map(user => (
@@ -102,6 +113,7 @@ export default function Payments() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.1 }}
+                                whileFocus={{ scale: 1.05 }}
                             />
                             <motion.input
                                 type="date"
@@ -112,6 +124,7 @@ export default function Payments() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
+                                whileFocus={{ scale: 1.05 }}
                             />
                             <motion.button
                                 type="submit"
@@ -124,6 +137,14 @@ export default function Payments() {
                         </motion.form>
                     </motion.div>
                 </main>
+                <motion.button
+                    onClick={handleBackClick}
+                    className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    Voltar
+                </motion.button>
             </div>
         </AuthRoute>
     );

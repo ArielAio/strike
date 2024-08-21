@@ -10,6 +10,7 @@ export default function Home() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [city, setCity] = useState('');
     const router = useRouter();
 
     const handleSubmit = async (e) => {
@@ -18,8 +19,9 @@ export default function Home() {
         try {
             const userRef = await addDoc(collection(db, 'users'), {
                 name,
-                email,
-                phone,
+                email: email || null, 
+                phone: phone || null,  
+                city,
             });
             alert('Usuário cadastrado com sucesso! ID: ' + userRef.id);
         } catch (error) {
@@ -57,29 +59,44 @@ export default function Home() {
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3 }}
+                                whileFocus={{ scale: 1.05 }}
                             />
                             <motion.input
                                 type="email"
                                 placeholder="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.1 }}
+                                whileFocus={{ scale: 1.05 }}
                             />
                             <motion.input
                                 type="tel"
                                 placeholder="Telefone"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                required
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.2 }}
+                                whileFocus={{ scale: 1.05 }}
                             />
+                            <motion.select
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                required
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: 0.3 }}
+                                whileFocus={{ scale: 1.05 }}
+                            >
+                                <option value="" disabled>Selecione a cidade</option>
+                                <option value="São João das Duas Pontes">São João das Duas Pontes</option>
+                                <option value="Pontalinda">Pontalinda</option>
+                            </motion.select>
                             <motion.button
                                 type="submit"
                                 className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
@@ -91,6 +108,14 @@ export default function Home() {
                         </form>
                     </motion.div>
                 </main>
+                <motion.button
+                    onClick={handleBackClick}
+                    className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    Voltar
+                </motion.button>
             </div>
         </AuthRoute>
     );
