@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import AuthRoute from '../../src/AuthRoute';
 import Header from '@/Header';
 import { motion } from 'framer-motion';
+import Select from 'react-select';
 
 export default function Payments() {
     const [users, setUsers] = useState([]);
@@ -28,19 +29,19 @@ export default function Payments() {
     }, []);
 
     useEffect(() => {
+        const calculateExpirationDate = (dateString) => {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const newDate = new Date(year, month - 1, day);
+            newDate.setDate(newDate.getDate() + 30);
+
+            const expirationYear = newDate.getUTCFullYear();
+            const expirationMonth = String(newDate.getUTCMonth() + 1).padStart(2, '0');
+            const expirationDay = String(newDate.getUTCDate()).padStart(2, '0');
+
+            return `${expirationYear}-${expirationMonth}-${expirationDay}`;
+        };
+
         if (paymentDate) {
-            const calculateExpirationDate = (dateString) => {
-                const [year, month, day] = dateString.split('-').map(Number);
-                const newDate = new Date(year, month - 1, day);
-                newDate.setDate(newDate.getDate() + 30);
-
-                const expirationYear = newDate.getUTCFullYear();
-                const expirationMonth = String(newDate.getUTCMonth() + 1).padStart(2, '0');
-                const expirationDay = String(newDate.getUTCDate()).padStart(2, '0');
-
-                return `${expirationYear}-${expirationMonth}-${expirationDay}`;
-            };
-
             setExpirationDate(calculateExpirationDate(paymentDate));
         }
     }, [paymentDate]);
@@ -65,6 +66,11 @@ export default function Payments() {
         router.push('/');
     };
 
+    const userOptions = users.map(user => ({
+        value: user.id,
+        label: `${user.name} (${user.email || 'nenhum email vinculado'})`
+    }));
+
     return (
         <AuthRoute>
             <div className="min-h-screen flex flex-col bg-gray-100">
@@ -86,23 +92,13 @@ export default function Payments() {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <motion.select
-                                value={userId}
-                                onChange={(e) => setUserId(e.target.value)}
-                                required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                                whileFocus={{ scale: 1.05 }}
-                            >
-                                <option value="">Selecione um Usuário</option>
-                                {users.map(user => (
-                                    <option key={user.id} value={user.id}>
-                                        {user.name} ({user.email})
-                                    </option>
-                                ))}
-                            </motion.select>
+                            <Select
+                                options={userOptions}
+                                onChange={(option) => setUserId(option ? option.value : '')}
+                                placeholder="Selecione um Usuário"
+                                className="basic-single"
+                                classNamePrefix="select"
+                            />
                             <motion.input
                                 type="date"
                                 placeholder="Data de Pagamento"
