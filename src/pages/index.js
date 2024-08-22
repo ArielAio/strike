@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import AuthRoute from '../../src/AuthRoute';
 import Header from '../../src/Header';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { FaUserPlus, FaMoneyCheckAlt, FaListAlt } from 'react-icons/fa';
 
 export default function Home() {
@@ -39,8 +38,10 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
             <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.1 }}
               whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
               className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center justify-center cursor-pointer" 
               onClick={handleRegisterClick}
             >
@@ -49,8 +50,10 @@ export default function Home() {
             </motion.div>
 
             <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
               whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
               className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center justify-center cursor-pointer" 
               onClick={handlePaymentsClick}
             >
@@ -59,8 +62,10 @@ export default function Home() {
             </motion.div>
 
             <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
               whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.3 }}
               className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center justify-center cursor-pointer" 
               onClick={handleListClick}
             >
