@@ -4,6 +4,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import AuthRoute from '../../src/AuthRoute';
 import Header from '@/Header';
+import ReactInputMask from 'react-input-mask';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -73,17 +74,22 @@ export default function Home() {
                                 transition={{ duration: 0.3, delay: 0.1 }}
                                 whileFocus={{ scale: 1.05 }}
                             />
-                            <motion.input
-                                type="tel"
-                                placeholder="Telefone"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                            <motion.div
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.2 }}
                                 whileFocus={{ scale: 1.05 }}
-                            />
+                            >
+                                <ReactInputMask
+                                    mask="(99) 99999-9999"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                >
+                                    {(inputProps) => <motion.input {...inputProps} type="tel" placeholder="Telefone" />}
+                                </ReactInputMask>
+                            </motion.div>
+
                             <motion.select
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
