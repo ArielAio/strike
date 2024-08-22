@@ -286,101 +286,119 @@ export default function List() {
                                 </select>
                             </div>
                             {currentUsers.length > 0 ? (
-                               <motion.ul
-                               className="space-y-4"
-                               initial={{ opacity: 0 }}
-                               animate={{ opacity: 1 }}
-                               transition={{ duration: 0.5 }}
-                           >
-                               {currentUsers.map(user => (
-                                   <motion.li
-                                       key={user.id}
-                                       className={`p-6 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${getCardColor(user.payments)}`}
-                                       initial={{ opacity: 0, y: 10 }}
-                                       animate={{ opacity: 1, y: 0 }}
-                                       transition={{ duration: 0.3 }}
-                                       whileHover={{ scale: 1.03 }}
-                                   >
-                                       <div onClick={() => toggleExpand(user.id)} className="cursor-pointer mb-4 flex items-center justify-between">
-                                           <div>
-                                               <p className="text-lg font-semibold text-gray-800">
-                                                   {user.name} {getPaymentStatus(user.payments)}
-                                               </p>
-                                               <p className="text-sm text-gray-600">
-                                                   <span className="font-semibold">Email:</span> {user.email || 'Nenhum email vinculado'}
-                                               </p>
-                                               <p className="text-sm text-gray-600">
-                                                   <span className="font-semibold">Telefone:</span> {user.phone || 'Nenhum telefone vinculado'}
-                                               </p>
-                                               <p className="text-sm text-gray-600">
-                                                   <span className="font-semibold">Cidade:</span> {user.city}
-                                               </p>
-                                           </div>
-                                           <FaChevronDown
-                                               className={`text-gray-500 transform transition-transform ${expandedUserId === user.id ? 'rotate-180' : ''}`}
-                                           />
-                                       </div>
-                                       {expandedUserId === user.id && (
-                                           <motion.div
-                                               className="mt-4"
-                                               initial={{ opacity: 0, height: 0 }}
-                                               animate={{ opacity: 1, height: 'auto' }}
-                                               transition={{ duration: 0.3 }}
-                                           >
-                                               <h3 className="text-md font-semibold mb-2 text-gray-800">Pagamentos:</h3>
-                                               {user.payments.length > 0 ? (
-                                                   <>
-                                                       <ul className="space-y-2">
-                                                           {user.payments.slice(0, visiblePayments).map(payment => (
-                                                               <li key={payment.id} className="p-3 border border-gray-200 rounded-md">
-                                                                   <p className="text-sm text-gray-700">
-                                                                       <span className="font-semibold">Data de Pagamento:</span> {new Date(new Date(payment.paymentDate).setDate(new Date(payment.paymentDate).getDate() + 1)).toLocaleDateString('pt-BR')}
-                                                                   </p>
-                                                                   <p className="text-sm text-gray-700">
-                                                                       <span className="font-semibold">Data de Vencimento:</span> {new Date(new Date(payment.expirationDate).setDate(new Date(payment.expirationDate).getDate() + 1)).toLocaleDateString('pt-BR')}
-                                                                   </p>
-                                                                   <p className="text-sm text-gray-700">
-                                                                       <span className="font-semibold">Método de Pagamento:</span> {payment.paymentMethod}
-                                                                   </p>
-                                                                   <div className="flex justify-end space-x-2 mt-2">
-                                                                       <motion.button
-                                                                           onClick={() => redirectToEditPage('payment', payment.id)}
-                                                                           className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                                           whileHover={{ scale: 1.05 }}
-                                                                           transition={{ duration: 0.3 }}
-                                                                       >
-                                                                           <FaEdit />
-                                                                       </motion.button>
-                                                                       <motion.button
-                                                                           onClick={() => deletePayment(payment.id)}
-                                                                           className="px-3 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
-                                                                           whileHover={{ scale: 1.05 }}
-                                                                           transition={{ duration: 0.3 }}
-                                                                       >
-                                                                           <FaTrash />
-                                                                       </motion.button>
-                                                                   </div>
-                                                               </li>
-                                                           ))}
-                                                       </ul>
-                                                       {user.payments.length > visiblePayments && (
-                                                           <button
-                                                               onClick={handleShowMore}
-                                                               className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                                                           >
-                                                               Mostrar mais
-                                                           </button>
-                                                       )}
-                                                   </>
-                                               ) : (
-                                                   <p className="text-gray-500">Nenhum pagamento registrado.</p>
-                                               )}
-                                           </motion.div>
-                                       )}
-                                   </motion.li>
-                               ))}
-                           </motion.ul>
-                           
+                                <motion.ul
+                                    className="space-y-4"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    {currentUsers.map(user => (
+                                        <motion.li
+                                            key={user.id}
+                                            className={`p-6 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${getCardColor(user.payments)}`}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            whileHover={{ scale: 1.03 }}
+                                        >
+                                            <div onClick={() => toggleExpand(user.id)} className="cursor-pointer mb-4 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-lg font-semibold text-gray-800">
+                                                        {user.name} {getPaymentStatus(user.payments)}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold">Email:</span> {user.email || 'Nenhum email vinculado'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold">Telefone:</span> {user.phone || 'Nenhum telefone vinculado'}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        <span className="font-semibold">Cidade:</span> {user.city}
+                                                    </p>
+                                                </div>
+                                                <FaChevronDown
+                                                    className={`text-gray-500 transform transition-transform ${expandedUserId === user.id ? 'rotate-180' : ''}`}
+                                                />
+                                            </div>
+                                            <div className="flex justify-end space-x-2 mt-2">
+                                                <motion.button
+                                                    onClick={() => redirectToEditPage('user', user.id)}
+                                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                    whileHover={{ scale: 1.05 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <FaEdit />
+                                                </motion.button>
+                                                <motion.button
+                                                    onClick={() => deleteUser(user.id)}
+                                                    className="px-4 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
+                                                    whileHover={{ scale: 1.05 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <FaTrash />
+                                                </motion.button>
+                                            </div>
+                                            {expandedUserId === user.id && (
+                                                <motion.div
+                                                    className="mt-4"
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <h3 className="text-md font-semibold mb-2 text-gray-800">Pagamentos:</h3>
+                                                    {user.payments.length > 0 ? (
+                                                        <>
+                                                            <ul className="space-y-2">
+                                                                {user.payments.slice(0, visiblePayments).map(payment => (
+                                                                    <li key={payment.id} className="p-3 border border-gray-200 rounded-md">
+                                                                        <p className="text-sm text-gray-700">
+                                                                            <span className="font-semibold">Data de Pagamento:</span> {new Date(new Date(payment.paymentDate).setDate(new Date(payment.paymentDate).getDate() + 1)).toLocaleDateString('pt-BR')}
+                                                                        </p>
+                                                                        <p className="text-sm text-gray-700">
+                                                                            <span className="font-semibold">Data de Vencimento:</span> {new Date(new Date(payment.expirationDate).setDate(new Date(payment.expirationDate).getDate() + 1)).toLocaleDateString('pt-BR')}
+                                                                        </p>
+                                                                        <p className="text-sm text-gray-700">
+                                                                            <span className="font-semibold">Método de Pagamento:</span> {payment.paymentMethod}
+                                                                        </p>
+                                                                        <div className="flex justify-end space-x-2 mt-2">
+                                                                            <motion.button
+                                                                                onClick={() => redirectToEditPage('payment', payment.id)}
+                                                                                className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                                                whileHover={{ scale: 1.05 }}
+                                                                                transition={{ duration: 0.3 }}
+                                                                            >
+                                                                                <FaEdit />
+                                                                            </motion.button>
+                                                                            <motion.button
+                                                                                onClick={() => deletePayment(payment.id)}
+                                                                                className="px-3 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
+                                                                                whileHover={{ scale: 1.05 }}
+                                                                                transition={{ duration: 0.3 }}
+                                                                            >
+                                                                                <FaTrash />
+                                                                            </motion.button>
+                                                                        </div>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                            {user.payments.length > visiblePayments && (
+                                                                <button
+                                                                    onClick={handleShowMore}
+                                                                    className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                                                                >
+                                                                    Mostrar mais
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-gray-500">Nenhum pagamento registrado.</p>
+                                                    )}
+                                                </motion.div>
+                                            )}
+                                        </motion.li>
+                                    ))}
+                                </motion.ul>
+
                             ) : (
                                 <p className="text-gray-500">Nenhum usuário encontrado.</p>
                             )}
