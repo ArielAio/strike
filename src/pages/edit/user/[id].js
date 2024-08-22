@@ -4,6 +4,7 @@ import { db } from '../../../../src/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import AuthRoute from '../../../../src/AuthRoute';
 import { motion } from 'framer-motion';
+import ReactInputMask from 'react-input-mask';
 import Header from '@/Header';
 
 export default function EditUser() {
@@ -12,7 +13,7 @@ export default function EditUser() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [city, setCity] = useState(''); 
+    const [city, setCity] = useState('');
 
     useEffect(() => {
         if (id) {
@@ -24,8 +25,8 @@ export default function EditUser() {
                         const userData = userSnapshot.data();
                         setName(userData.name);
                         setEmail(userData.email || '');
-                        setPhone(userData.phone || ''); 
-                        setCity(userData.city || ''); 
+                        setPhone(userData.phone || '');
+                        setCity(userData.city || '');
                     }
                 } catch (error) {
                     console.error('Erro ao buscar usuário:', error);
@@ -43,9 +44,9 @@ export default function EditUser() {
             const userDocRef = doc(db, 'users', id);
             await updateDoc(userDocRef, {
                 name,
-                email: email || null, 
-                phone: phone || null,  
-                city,  
+                email: email || null,
+                phone: phone || null,
+                city,
             });
             alert('Usuário atualizado com sucesso!');
             router.push('/list');
@@ -102,17 +103,23 @@ export default function EditUser() {
                                 transition={{ duration: 0.3, delay: 0.1 }}
                                 whileFocus={{ scale: 1.05 }}
                             />
-                            <motion.input
-                                type="tel"
-                                placeholder="Telefone"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+
+                            <motion.div
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3, delay: 0.2 }}
                                 whileFocus={{ scale: 1.05 }}
-                            />
+                            >
+                                <ReactInputMask
+                                    mask="(99) 99999-9999"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                >
+                                    {(inputProps) => <motion.input {...inputProps} type="tel" placeholder="Telefone" />}
+                                </ReactInputMask>
+                            </motion.div>
+
                             <motion.select
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
