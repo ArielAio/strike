@@ -261,7 +261,7 @@ export default function List() {
                             />
                             <motion.button
                                 onClick={handleAddPaymentClick}
-                                className="mb-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
+                                className="mb-4 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-green-300"
                                 whileHover={{ scale: 1.05 }}
                                 transition={{ duration: 0.3 }}
                             >
@@ -379,9 +379,9 @@ export default function List() {
                                     <button
                                         key={index}
                                         onClick={() => paginate(index + 1)}
-                                        className={`mx-1 px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300 
-                                    ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-transparent text-blue-500 border border-blue-500'} 
-                                    hover:bg-blue-600 hover:text-white`}
+                                        className={`mx-1 px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300 
+                                    ${currentPage === index + 1 ? 'bg-orange-500 text-white' : 'bg-transparent text-orange-500 border border-orange-500'} 
+                                    hover:bg-orange-600 hover:text-white`}
                                     >
                                         {index + 1}
                                     </button>
