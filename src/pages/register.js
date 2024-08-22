@@ -19,11 +19,12 @@ export default function Home() {
         try {
             const userRef = await addDoc(collection(db, 'users'), {
                 name,
-                email: email || null, 
-                phone: phone || null,  
+                email: email || null,
+                phone: phone || null,
                 city,
             });
-            alert('Usuário cadastrado com sucesso! ID: ' + userRef.id);
+            alert('Usuário cadastrado com sucesso!');
+            router.push('/');
         } catch (error) {
             console.error('Erro ao salvar usuário:', error);
             alert('Erro ao salvar o usuário.');

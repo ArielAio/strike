@@ -32,7 +32,7 @@ const EventDetailsModal = ({ modalIsOpen, setModalIsOpen, modalEvents = [] }) =>
                                 <ul className="space-y-2">
                                     {event.details.map((payment, idx) => (
                                         <li key={idx} className="text-gray-700">
-                                            <strong>Data de Vencimento:</strong> {new Date(payment.expirationDate).toLocaleDateString('pt-BR')}
+                                            <strong className="text-gray-700">Data de Vencimento:</strong> {new Date(new Date(payment.expirationDate).setDate(new Date(payment.expirationDate).getDate() + 1)).toLocaleDateString('pt-BR')}
                                         </li>
                                     ))}
                                 </ul>

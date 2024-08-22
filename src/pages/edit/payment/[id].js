@@ -14,6 +14,7 @@ export default function EditPayment() {
     const [userId, setUserId] = useState('');
     const [paymentDate, setPaymentDate] = useState('');
     const [expirationDate, setExpirationDate] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -41,6 +42,7 @@ export default function EditPayment() {
                         setUserId(paymentData.userId);
                         setPaymentDate(new Date(paymentData.paymentDate).toISOString().split('T')[0]);
                         setExpirationDate(new Date(paymentData.expirationDate).toISOString().split('T')[0]);
+                        setPaymentMethod(paymentData.paymentMethod || '');
                     }
                 } catch (error) {
                     console.error('Erro ao buscar pagamento:', error);
@@ -68,6 +70,7 @@ export default function EditPayment() {
                 userId,
                 paymentDate,
                 expirationDate,
+                paymentMethod,
             });
             alert('Pagamento atualizado com sucesso!');
             router.push('/list');
@@ -140,6 +143,22 @@ export default function EditPayment() {
                                     transition={{ duration: 0.5, delay: 0.1 }}
                                     whileFocus={{ scale: 1.05 }}
                                 />
+                                <motion.select
+                                    value={paymentMethod}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.1 }}
+                                    whileFocus={{ scale: 1.05 }}
+                                >
+                                    <option value="">Selecione o Meio de Pagamento</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                    <option value="Pix">Pix</option>
+                                    <option value="Cartão">Cartão</option>
+                                    <option value="Outro">Outro</option>
+                                </motion.select>
                                 <motion.button
                                     type="submit"
                                     className="w-full py-2 px-4 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
