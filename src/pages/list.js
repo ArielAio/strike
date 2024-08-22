@@ -412,7 +412,7 @@ export default function List() {
                                 tileContent={({ date, view }) => view === 'month' && getEventTitle(date) && (
                                     <div className="flex items-center justify-center w-full h-full">
                                         <div
-                                            className="bg-yellow-400 rounded-full w-6 h-4 cursor-pointer mb-2"
+                                            className="bg-yellow-400 rounded-full w-6 h-6 cursor-pointer mb-2"
                                             onClick={() => openModal(date)}
                                         />
                                     </div>
