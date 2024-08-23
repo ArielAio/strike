@@ -135,7 +135,13 @@ export default function List() {
         }
     };
 
-    const deleteUser = async (userId) => {
+    const deleteUser = async (userId, userName) => {
+        const confirmDeletion = window.confirm(`Tem certeza que deseja deletar o usuário ${userName}?`);
+
+        if (!confirmDeletion) {
+            return;
+        }
+
         try {
             await deleteDoc(doc(db, 'users', userId));
             alert('Usuário deletado com sucesso!');
@@ -146,6 +152,7 @@ export default function List() {
             alert('Erro ao deletar o usuário.');
         }
     };
+
 
     const getPaymentStatus = (payments) => {
         if (!payments || payments.length === 0) return '';
@@ -167,6 +174,12 @@ export default function List() {
     };
 
     const deletePayment = async (paymentId) => {
+        const confirmDeletion = window.confirm(`Tem certeza que deseja deletar esse pagamento?`);
+
+        if (!confirmDeletion) {
+            return; 
+        }
+
         try {
             await deleteDoc(doc(db, 'payments', paymentId));
             alert('Pagamento deletado com sucesso!');
@@ -184,6 +197,7 @@ export default function List() {
             alert('Erro ao deletar o pagamento.');
         }
     };
+
 
     const redirectToEditPage = (type, id) => {
         router.push(`/edit/${type}/${id}`);
@@ -330,7 +344,7 @@ export default function List() {
                                                     <FaEdit />
                                                 </motion.button>
                                                 <motion.button
-                                                    onClick={() => deleteUser(user.id)}
+                                                    onClick={() => deleteUser(user.id, user.name)}
                                                     className="px-4 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
                                                     whileHover={{ scale: 1.05 }}
                                                     transition={{ duration: 0.3 }}
