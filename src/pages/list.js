@@ -7,7 +7,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Modal from 'react-modal';
 import Header from '@/Header';
-import EventDetailsModal from '../pages/components/EventDetailsModal';
+import EventDetailsModal from './components/EventDetailsModal';
 import { motion } from 'framer-motion';
 import { FaTrash, FaEdit, FaChevronDown } from 'react-icons/fa';
 import { Oval } from 'react-loader-spinner';
@@ -30,6 +30,18 @@ export default function List() {
     const [usersPerPage] = useState(4);
     const [loading, setLoading] = useState(true);
     const [visiblePayments, setVisiblePayments] = useState(2);
+    const [isVisible, setIsVisible] = useState(false);
+    const [paymentFilter, setPaymentFilter] = useState("");
+    const [cityFilter, setCityFilter] = useState("");
+
+    const handlePaymentFilterChange = (value) => {
+        setPaymentFilter(value);
+    };
+
+    const handleCityFilterChange = (value) => {
+        setCityFilter(value);
+    };
+
 
     const router = useRouter();
 
@@ -177,7 +189,7 @@ export default function List() {
         const confirmDeletion = window.confirm(`Tem certeza que deseja deletar esse pagamento?`);
 
         if (!confirmDeletion) {
-            return; 
+            return;
         }
 
         try {
@@ -225,18 +237,29 @@ export default function List() {
 
     useEffect(() => {
         let filteredList = users;
-        if (filterType === "overdue") {
+
+        if (paymentFilter === "overdue") {
             filteredList = overdueUsers;
-        } else if (filterType === "dueSoon") {
+        } else if (paymentFilter === "dueSoon") {
             filteredList = dueSoonUsers;
-        } else if (filterType === "safe") {
+        } else if (paymentFilter === "safe") {
             filteredList = safeUsers;
         }
+
+        if (cityFilter) {
+            filteredList = filteredList.filter(user => user.city === cityFilter);
+        }
+
         setFilteredUsers(filteredList);
-    }, [currentPage, filterType]);
+    }, [currentPage, paymentFilter, cityFilter]);
+
 
     const handleShowMore = () => {
         setVisiblePayments(prev => prev + 2);
+    };
+
+    const toggleFilters = () => {
+        setIsVisible(!isVisible);
     };
 
     return (
@@ -287,18 +310,63 @@ export default function List() {
                                 Cadastrar Pagamento
                             </motion.button>
 
-                            <div className="flex space-x-4 mb-4">
-                                <select
-                                    onChange={(e) => handleFilterChange(e.target.value)}
-                                    className="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            <div className="mb-4">
+                                <button
+                                    onClick={toggleFilters}
+                                    className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
                                 >
+                                    <span>Filtros</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className={`w-5 h-5 transition-transform ${isVisible ? 'rotate-180' : ''}`}
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M6.293 9.293a1 1 0 011.414 0L10 10.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
 
-                                    <option value="">Todos os Pagamentos</option>
-                                    <option value="overdue">Atrasados</option>
-                                    <option value="dueSoon">Vencendo em Breve</option>
-                                    <option value="safe">Em Dia</option>
-                                </select>
+                                {isVisible && (
+                                    <div className="mt-4">
+                                        <div className="flex space-x-4 mb-4">
+                                            <div className="flex-1">
+                                                <label htmlFor="paymentFilter" className="block text-sm font-medium text-gray-700">Tipo de Pagamento</label>
+                                                <select
+                                                    id="paymentFilter"
+                                                    onChange={(e) => handlePaymentFilterChange(e.target.value)}
+                                                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                >
+                                                    <option value="">Todos os Pagamentos</option>
+                                                    <option value="overdue">Atrasados</option>
+                                                    <option value="dueSoon">Vencendo em Breve</option>
+                                                    <option value="safe">Em Dia</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="flex-1">
+                                                <label htmlFor="cityFilter" className="block text-sm font-medium text-gray-700">Cidade</label>
+                                                <select
+                                                    id="cityFilter"
+                                                    onChange={(e) => handleCityFilterChange(e.target.value)}
+                                                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                                >
+                                                    <option value="">Todas as Cidades</option>
+                                                    <option value="Pontalinda">Pontalinda</option>
+                                                    <option value="São João das Duas Pontes">São João das Duas Pontes</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
+
+
+
                             {currentUsers.length > 0 ? (
                                 <motion.ul
                                     className="space-y-4"
@@ -464,8 +532,9 @@ export default function List() {
                         Voltar
                     </motion.button>
                 </div>
-            )}
+            )
+            }
 
-        </AuthRoute>
+        </AuthRoute >
     );
 }
