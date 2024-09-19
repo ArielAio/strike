@@ -3,46 +3,41 @@ import { db } from '../../src/firebase';
 import { collection, getDocs, query, where, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import AuthRoute from '../../src/AuthRoute';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import Modal from 'react-modal';
 import Header from '@/Header';
-import EventDetailsModal from './components/EventDetailsModal';
-import { motion } from 'framer-motion';
-import { FaTrash, FaEdit, FaChevronDown } from 'react-icons/fa';
-import { Oval } from 'react-loader-spinner';
+import { FaTrash, FaEdit, FaChevronDown, FaSearch, FaPlus, FaFilter, FaUserPlus } from 'react-icons/fa';
+import Select from 'react-select';
+import ReactPaginate from 'react-paginate';
+import { motion, AnimatePresence } from 'framer-motion';
 
-Modal.setAppElement('#__next');
+const NoClientsMessage = ({ onAddClient }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="text-center py-10 bg-white rounded-lg shadow-md"
+  >
+    <FaUserPlus className="mx-auto text-6xl text-gray-300 mb-4" />
+    <h2 className="text-2xl font-semibold text-gray-700 mb-2">Nenhum cliente encontrado</h2>
+    <p className="text-gray-500 mb-4">Comece adicionando seu primeiro cliente!</p>
+    <button
+      onClick={onAddClient}
+      className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition-colors duration-200 transform hover:scale-105 inline-flex items-center"
+    >
+      <FaUserPlus className="mr-2" /> Adicionar Cliente
+    </button>
+  </motion.div>
+);
 
 export default function List() {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedUserId, setExpandedUserId] = useState(null);
-    const [date, setDate] = useState(new Date());
-    const [events, setEvents] = useState([]);
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [modalEvents, setModalEvents] = useState([]);
-    const [overdueUsers, setOverdueUsers] = useState([]);
-    const [dueSoonUsers, setDueSoonUsers] = useState([]);
-    const [safeUsers, setSafeUsers] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [usersPerPage] = useState(4);
-    const [loading, setLoading] = useState(true);
-    const [visiblePayments, setVisiblePayments] = useState(2);
-    const [isVisible, setIsVisible] = useState(false);
     const [paymentFilter, setPaymentFilter] = useState("");
     const [cityFilter, setCityFilter] = useState("");
-
-    const handlePaymentFilterChange = (value) => {
-        setPaymentFilter(value);
-    };
-
-    const handleCityFilterChange = (value) => {
-        setCityFilter(value);
-    };
-
-
+    const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [itemsPerPage] = useState(10);
     const router = useRouter();
 
     useEffect(() => {
@@ -63,16 +58,6 @@ export default function List() {
 
                 setUsers(usersList);
                 setFilteredUsers(usersList);
-                updateCalendarEvents(usersList);
-
-                const overdue = usersList.filter(user => getCardColor(user.payments) === 'bg-red-300');
-                const dueSoon = usersList.filter(user => getCardColor(user.payments) === 'bg-yellow-300');
-                const safe = usersList.filter(user => getCardColor(user.payments) === 'bg-green-300');
-
-                setOverdueUsers(overdue);
-                setDueSoonUsers(dueSoon);
-                setSafeUsers(safe);
-
             } catch (error) {
                 console.error('Error fetching users and payments:', error);
             } finally {
@@ -80,461 +65,348 @@ export default function List() {
             }
         };
 
-
         fetchUsersWithPayments();
     }, []);
 
     useEffect(() => {
-        const filtered = users.filter(user =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredUsers(filtered);
-    }, [searchTerm, users, currentPage, usersPerPage]);
+        const filterUsers = () => {
+            let filtered = users;
 
-    const handleBackClick = () => {
-        router.push('/');
-    };
+            if (searchTerm) {
+                filtered = filtered.filter(user =>
+                    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
 
-    const handleAddPaymentClick = () => {
-        router.push('/payments');
+            if (paymentFilter) {
+                filtered = filtered.filter(user => getPaymentStatus(user.payments) === paymentFilter);
+            }
+
+            if (cityFilter) {
+                filtered = filtered.filter(user => user.city === cityFilter);
+            }
+
+            setFilteredUsers(filtered);
+            setCurrentPage(0); // Reset to first page when filters change
+        };
+
+        filterUsers();
+    }, [searchTerm, paymentFilter, cityFilter, users]);
+
+    const getPaymentStatus = (payments) => {
+        if (!payments || payments.length === 0) return 'nenhum';
+        const lastPayment = payments[0];
+        const expiration = new Date(lastPayment.expirationDate);
+        const daysRemaining = Math.ceil((expiration - new Date()) / (1000 * 60 * 60 * 24));
+
+        if (daysRemaining < 0) return 'atrasado';
+        if (daysRemaining <= 5) return 'proximo';
+        return 'emDia';
     };
 
     const toggleExpand = (userId) => {
         setExpandedUserId(expandedUserId === userId ? null : userId);
     };
 
-    const updateCalendarEvents = (usersList) => {
-        const events = usersList.flatMap(user =>
-            user.payments.map(payment => ({
-                date: new Date(new Date(payment.expirationDate).setDate(new Date(payment.expirationDate).getDate() + 1)),
-                title: `${user.name} - Vencimento`,
-                details: user.payments.filter(p => new Date(new Date(p.expirationDate).setDate(new Date(p.expirationDate).getDate() + 1)).toDateString() === new Date(new Date(payment.expirationDate).setDate(new Date(payment.expirationDate).getDate() + 1)).toDateString())
-            }))
-        );
-        setEvents(events);
-    };
-
-
-    const handleDateChange = (newDate) => {
-        setDate(newDate);
-    };
-
-    const getEventTitle = (date) => {
-        const event = events.find(event => event.date.toDateString() === date.toDateString());
-        return event ? event.title : null;
-    };
-
-    const openModal = (date) => {
-        const filteredEvents = events.filter(event => event.date.toDateString() === date.toDateString());
-        setModalEvents(filteredEvents);
-        setModalIsOpen(true);
-    };
-
-    const getCardColor = (payments) => {
-        if (!payments || payments.length === 0) return 'bg-white';
-
-        const currentDate = new Date();
-        const lastPayment = payments[0];
-        const expiration = new Date(lastPayment.expirationDate);
-        const daysRemaining = Math.ceil((expiration - currentDate) / (1000 * 60 * 60 * 24));
-
-        if (daysRemaining < 0) {
-            return 'bg-red-300';
-        } else if (daysRemaining <= 5) {
-            return 'bg-yellow-300';
-        } else {
-            return 'bg-green-300';
-        }
-    };
-
     const deleteUser = async (userId, userName) => {
-        const confirmDeletion = window.confirm(`Tem certeza que deseja deletar o usuário ${userName}?`);
-
-        if (!confirmDeletion) {
-            return;
-        }
-
-        try {
-            await deleteDoc(doc(db, 'users', userId));
-            alert('Usuário deletado com sucesso!');
-            setUsers(users.filter(user => user.id !== userId));
-            setFilteredUsers(filteredUsers.filter(user => user.id !== userId));
-        } catch (error) {
-            console.error('Erro ao deletar usuário:', error);
-            alert('Erro ao deletar o usuário.');
+        if (window.confirm(`Tem certeza que deseja deletar o usuário ${userName}?`)) {
+            try {
+                await deleteDoc(doc(db, 'users', userId));
+                setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+                setFilteredUsers(prevFiltered => prevFiltered.filter(user => user.id !== userId));
+                alert('Usuário deletado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao deletar usuário:', error);
+                alert('Erro ao deletar o usuário.');
+            }
         }
     };
 
-
-    const getPaymentStatus = (payments) => {
-        if (!payments || payments.length === 0) return '';
-
-        const currentDate = new Date();
-        const lastPayment = payments[0];
-        const expiration = new Date(lastPayment.expirationDate);
-        const daysRemaining = Math.ceil((expiration - currentDate) / (1000 * 60 * 60 * 24));
-
-        if (daysRemaining < 0) {
-            return ' (Pagamento atrasado)';
-        } else if (daysRemaining === 0) {
-            return ' (Vence hoje)';
-        } else if (daysRemaining === 1) {
-            return ' (1 dia restante)';
-        } else {
-            return ` (${daysRemaining} dias restantes)`;
+    const deletePayment = async (paymentId, userId) => {
+        if (window.confirm('Tem certeza que deseja deletar esse pagamento?')) {
+            try {
+                await deleteDoc(doc(db, 'payments', paymentId));
+                const updatedUsers = users.map(user => {
+                    if (user.id === userId) {
+                        return {
+                            ...user,
+                            payments: user.payments.filter(payment => payment.id !== paymentId),
+                        };
+                    }
+                    return user;
+                });
+                setUsers(updatedUsers);
+                setFilteredUsers(updatedUsers);
+                alert('Pagamento deletado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao deletar pagamento:', error);
+                alert('Erro ao deletar o pagamento.');
+            }
         }
     };
 
-    const deletePayment = async (paymentId) => {
-        const confirmDeletion = window.confirm(`Tem certeza que deseja deletar esse pagamento?`);
+    const paymentFilterOptions = [
+        { value: '', label: 'Todos os pagamentos' },
+        { value: 'atrasado', label: 'Atrasados' },
+        { value: 'proximo', label: 'Próximos ao vencimento' },
+        { value: 'emDia', label: 'Em dia' },
+        { value: 'nenhum', label: 'Sem pagamentos' },
+    ];
 
-        if (!confirmDeletion) {
-            return;
-        }
+    const cityFilterOptions = [
+        { value: '', label: 'Todas as cidades' },
+        { value: 'São João das Duas Pontes', label: 'São João das Duas Pontes' },
+        { value: 'Pontalinda', label: 'Pontalinda' },
+    ];
 
-        try {
-            await deleteDoc(doc(db, 'payments', paymentId));
-            alert('Pagamento deletado com sucesso!');
-            const updatedUsers = users.map(user => ({
-                ...user,
-                payments: user.payments.filter(payment => payment.id !== paymentId),
-            }));
-            setUsers(updatedUsers);
-            setFilteredUsers(updatedUsers.filter(user =>
-                user.name.toLowerCase().includes(searchTerm.toLowerCase())
-            ));
-            updateCalendarEvents(updatedUsers);
-        } catch (error) {
-            console.error('Erro ao deletar pagamento:', error);
-            alert('Erro ao deletar o pagamento.');
-        }
-    };
+    const pageCount = Math.ceil(filteredUsers.length / itemsPerPage);
+    const offset = currentPage * itemsPerPage;
+    const currentPageUsers = filteredUsers.slice(offset, offset + itemsPerPage);
 
-
-    const redirectToEditPage = (type, id) => {
-        router.push(`/edit/${type}/${id}`);
-    };
-
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-
-    const paginate = (pageNumber) => {
-        setCurrentPage(pageNumber);
-        const startIndex = (pageNumber - 1) * usersPerPage;
-        const endIndex = startIndex + usersPerPage;
-        const filtered = filteredUsers.filter(user =>
-            user.name.toLowerCase().includes(searchTerm.toLowerCase())
-        ).slice(startIndex, endIndex);
-    };
-
-    const handleFilterChange = (filter) => {
-        setCurrentPage(1);
-        setFilterType(filter);
-    };
-
-    const [filterType, setFilterType] = useState("");
-
-    useEffect(() => {
-        let filteredList = users;
-
-        if (paymentFilter === "overdue") {
-            filteredList = overdueUsers;
-        } else if (paymentFilter === "dueSoon") {
-            filteredList = dueSoonUsers;
-        } else if (paymentFilter === "safe") {
-            filteredList = safeUsers;
-        }
-
-        if (cityFilter) {
-            filteredList = filteredList.filter(user => user.city === cityFilter);
-        }
-
-        setFilteredUsers(filteredList);
-    }, [currentPage, paymentFilter, cityFilter]);
-
-
-    const handleShowMore = () => {
-        setVisiblePayments(prev => prev + 2);
-    };
-
-    const toggleFilters = () => {
-        setIsVisible(!isVisible);
+    const handlePageChange = ({ selected }) => {
+        setCurrentPage(selected);
     };
 
     return (
         <AuthRoute>
-            {loading ? (
-                <div className="flex items-center justify-center min-h-screen bg-white">
-                    <Oval
-                        height={80}
-                        width={80}
-                        color="#FFD700"
-                        wrapperStyle={{}}
-                        wrapperClass=""
-                        visible={true}
-                        ariaLabel='oval-loading'
-                        secondaryColor="#FFA500"
-                        strokeWidth={5}
-                        strokeWidthSecondary={5}
-                    />
-                </div>
-            ) : (
-                <div className="min-h-screen flex flex-col bg-gray-100">
-                    <Header />
-                    <main className="flex-grow flex flex-col items-center p-4">
-
-                        <motion.div
-                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">Usuários e Pagamentos</h2>
-                            <motion.input
-                                type="text"
-                                placeholder="Pesquisar usuário por nome"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full p-2 mb-4 border border-gray-300 rounded-lg"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.5 }}
-                            />
-                            <motion.button
-                                onClick={handleAddPaymentClick}
-                                className="mb-4 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-green-300"
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.3 }}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="min-h-screen flex flex-col bg-gray-50"
+            >
+                <Header />
+                <main className="flex-grow p-4 md:p-6 lg:p-8">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0">Lista de Clientes</h1>
+                            <button
+                                onClick={() => router.push('/register')}
+                                className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors duration-200 transform hover:scale-105 flex items-center justify-center"
                             >
-                                Cadastrar Pagamento
-                            </motion.button>
+                                <FaPlus className="mr-2" /> Adicionar Cliente
+                            </button>
+                        </div>
 
-                            <div className="mb-4">
-                                <button
-                                    onClick={toggleFilters}
-                                    className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
-                                >
-                                    <span>Filtros</span>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className={`w-5 h-5 transition-transform ${isVisible ? 'rotate-180' : ''}`}
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M6.293 9.293a1 1 0 011.414 0L10 10.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                                            clipRule="evenodd"
+                        <div className="bg-white rounded-lg shadow-md p-4 md:p-6 mb-6">
+                            <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
+                                <div className="flex-grow mb-4 md:mb-0">
+                                    <div className="relative">
+                                        <FaSearch className="absolute top-3 left-3 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar cliente..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                         />
-                                    </svg>
-                                </button>
-
-                                {isVisible && (
-                                    <div className="mt-4">
-                                        <div className="flex space-x-4 mb-4">
-                                            <div className="flex-1">
-                                                <label htmlFor="paymentFilter" className="block text-sm font-medium text-gray-700">Tipo de Pagamento</label>
-                                                <select
-                                                    id="paymentFilter"
-                                                    onChange={(e) => handlePaymentFilterChange(e.target.value)}
-                                                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                >
-                                                    <option value="">Todos os Pagamentos</option>
-                                                    <option value="overdue">Atrasados</option>
-                                                    <option value="dueSoon">Vencendo em Breve</option>
-                                                    <option value="safe">Em Dia</option>
-                                                </select>
-                                            </div>
-
-                                            <div className="flex-1">
-                                                <label htmlFor="cityFilter" className="block text-sm font-medium text-gray-700">Cidade</label>
-                                                <select
-                                                    id="cityFilter"
-                                                    onChange={(e) => handleCityFilterChange(e.target.value)}
-                                                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                >
-                                                    <option value="">Todas as Cidades</option>
-                                                    <option value="Pontalinda">Pontalinda</option>
-                                                    <option value="São João das Duas Pontes">São João das Duas Pontes</option>
-                                                </select>
-                                            </div>
-                                        </div>
                                     </div>
-                                )}
+                                </div>
+                                <div className="flex-shrink-0 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                                    <Select
+                                        options={paymentFilterOptions}
+                                        value={paymentFilterOptions.find(option => option.value === paymentFilter)}
+                                        onChange={(selectedOption) => {
+                                            setPaymentFilter(selectedOption.value);
+                                            setCurrentPage(0); // Reset to first page when filter changes
+                                        }}
+                                        placeholder="Filtrar por pagamento"
+                                        className="react-select-container w-full md:w-48"
+                                        classNamePrefix="react-select"
+                                    />
+                                    <Select
+                                        options={cityFilterOptions}
+                                        value={cityFilterOptions.find(option => option.value === cityFilter)}
+                                        onChange={(selectedOption) => {
+                                            setCityFilter(selectedOption.value);
+                                            setCurrentPage(0); // Reset to first page when filter changes
+                                        }}
+                                        placeholder="Filtrar por cidade"
+                                        className="react-select-container w-full md:w-48"
+                                        classNamePrefix="react-select"
+                                    />
+                                </div>
                             </div>
+                        </div>
 
-
-
-                            {currentUsers.length > 0 ? (
-                                <motion.ul
-                                    className="space-y-4"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    {currentUsers.map(user => (
-                                        <motion.li
+                        {loading ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="text-center py-10"
+                            >
+                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+                                <p className="mt-4 text-gray-600 text-lg">Carregando clientes...</p>
+                            </motion.div>
+                        ) : filteredUsers.length > 0 ? (
+                            <>
+                                <AnimatePresence>
+                                    {currentPageUsers.map((user) => (
+                                        <motion.div
                                             key={user.id}
-                                            className={`p-6 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${getCardColor(user.payments)}`}
-                                            initial={{ opacity: 0, y: 10 }}
+                                            initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
                                             transition={{ duration: 0.3 }}
-                                            whileHover={{ scale: 1.03 }}
+                                            className={`mb-4 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg user-card-transition ${getPaymentStatus(user.payments) === 'atrasado' ? 'border-l-4 border-red-500' :
+                                                    getPaymentStatus(user.payments) === 'proximo' ? 'border-l-4 border-yellow-500' :
+                                                        getPaymentStatus(user.payments) === 'emDia' ? 'border-l-4 border-green-500' :
+                                                            'border-l-4 border-gray-300'
+                                                }`}
                                         >
-                                            <div onClick={() => toggleExpand(user.id)} className="cursor-pointer mb-4 flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-lg font-semibold text-gray-800">
-                                                        {user.name} {getPaymentStatus(user.payments)}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold">Email:</span> {user.email || 'Nenhum email vinculado'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold">Telefone:</span> {user.phone || 'Nenhum telefone vinculado'}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600">
-                                                        <span className="font-semibold">Cidade:</span> {user.city}
-                                                    </p>
+                                            <div className="p-4 md:p-6">
+                                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                                                    <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-2 md:mb-0">{user.name}</h2>
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() => router.push(`/edit/user/${user.id}`)}
+                                                            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-200 transform hover:scale-110"
+                                                            title="Editar cliente"
+                                                        >
+                                                            <FaEdit />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => deleteUser(user.id, user.name)}
+                                                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all duration-200 transform hover:scale-110"
+                                                            title="Deletar cliente"
+                                                        >
+                                                            <FaTrash />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => toggleExpand(user.id)}
+                                                            className="p-2 bg-gray-200 text-gray-600 rounded-full hover:bg-gray-300 transition-all duration-200 transform hover:scale-110"
+                                                            title="Expandir detalhes"
+                                                        >
+                                                            <FaChevronDown className={`transform transition-transform duration-200 ${expandedUserId === user.id ? 'rotate-180' : ''}`} />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <FaChevronDown
-                                                    className={`text-gray-500 transform transition-transform ${expandedUserId === user.id ? 'rotate-180' : ''}`}
-                                                />
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 text-sm md:text-base text-gray-600">
+                                                    <p><span className="font-semibold">Email:</span> {user.email || 'Não informado'}</p>
+                                                    <p><span className="font-semibold">Telefone:</span> {user.phone || 'Não informado'}</p>
+                                                    <p><span className="font-semibold">Cidade:</span> {user.city}</p>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-end space-x-2 mt-2">
-                                                <motion.button
-                                                    onClick={() => redirectToEditPage('user', user.id)}
-                                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                    whileHover={{ scale: 1.05 }}
-                                                    transition={{ duration: 0.3 }}
-                                                >
-                                                    <FaEdit />
-                                                </motion.button>
-                                                <motion.button
-                                                    onClick={() => deleteUser(user.id, user.name)}
-                                                    className="px-4 py-2 bg-red-400 text-white rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
-                                                    whileHover={{ scale: 1.05 }}
-                                                    transition={{ duration: 0.3 }}
-                                                >
-                                                    <FaTrash />
-                                                </motion.button>
-                                            </div>
-                                            {expandedUserId === user.id && (
-                                                <motion.div
-                                                    className="mt-4"
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    transition={{ duration: 0.3 }}
-                                                >
-                                                    <h3 className="text-md font-semibold mb-2 text-gray-800">Pagamentos:</h3>
-                                                    {user.payments.length > 0 ? (
-                                                        <>
-                                                            <ul className="space-y-2">
-                                                                {user.payments.slice(0, visiblePayments).map(payment => (
-                                                                    <li key={payment.id} className="p-3 border border-gray-200 rounded-md">
-                                                                        <p className="text-sm text-gray-700">
-                                                                            <span className="font-semibold">Data de Pagamento:</span> {new Date(new Date(payment.paymentDate).setDate(new Date(payment.paymentDate).getDate() + 1)).toLocaleDateString('pt-BR')}
-                                                                        </p>
-                                                                        <p className="text-sm text-gray-700">
-                                                                            <span className="font-semibold">Data de Vencimento:</span> {new Date(new Date(payment.expirationDate).setDate(new Date(payment.expirationDate).getDate() + 1)).toLocaleDateString('pt-BR')}
-                                                                        </p>
-                                                                        <p className="text-sm text-gray-700">
-                                                                            <span className="font-semibold">Método de Pagamento:</span> {payment.paymentMethod}
-                                                                        </p>
-                                                                        <div className="flex justify-end space-x-2 mt-2">
-                                                                            <motion.button
-                                                                                onClick={() => redirectToEditPage('payment', payment.id)}
-                                                                                className="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                                                                whileHover={{ scale: 1.05 }}
-                                                                                transition={{ duration: 0.3 }}
+                                            <AnimatePresence>
+                                                {expandedUserId === user.id && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                        className="px-4 md:px-6 pb-4 md:pb-6"
+                                                    >
+                                                        <h3 className="font-semibold text-lg mb-4">Histórico de Pagamentos</h3>
+                                                        {user.payments.length > 0 ? (
+                                                            <ul className="space-y-4">
+                                                                {user.payments.map((payment) => (
+                                                                    <li key={payment.id} className="bg-gray-50 p-4 rounded-md flex flex-col md:flex-row justify-between items-start md:items-center">
+                                                                        <div className="mb-2 md:mb-0">
+                                                                            <p className="font-semibold">Data de Pagamento: {new Date(payment.paymentDate).toLocaleDateString()}</p>
+                                                                            <p>Data de Vencimento: {new Date(payment.expirationDate).toLocaleDateString()}</p>
+                                                                            <p>Método: {payment.paymentMethod}</p>
+                                                                        </div>
+                                                                        <div className="flex space-x-2">
+                                                                            <button
+                                                                                onClick={() => router.push(`/edit/payment/${payment.id}`)}
+                                                                                className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200"
+                                                                                title="Editar pagamento"
                                                                             >
-                                                                                <FaEdit />
-                                                                            </motion.button>
-                                                                            <motion.button
-                                                                                onClick={() => deletePayment(payment.id)}
-                                                                                className="px-3 py-2 bg-red-400 text-white rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300"
-                                                                                whileHover={{ scale: 1.05 }}
-                                                                                transition={{ duration: 0.3 }}
+                                                                                <FaEdit size={14} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => deletePayment(payment.id, user.id)}
+                                                                                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                                                                                title="Deletar pagamento"
                                                                             >
-                                                                                <FaTrash />
-                                                                            </motion.button>
+                                                                                <FaTrash size={14} />
+                                                                            </button>
                                                                         </div>
                                                                     </li>
                                                                 ))}
                                                             </ul>
-                                                            {user.payments.length > visiblePayments && (
-                                                                <button
-                                                                    onClick={handleShowMore}
-                                                                    className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                                                                >
-                                                                    Mostrar mais
-                                                                </button>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <p className="text-gray-500">Nenhum pagamento registrado.</p>
-                                                    )}
-                                                </motion.div>
-                                            )}
-                                        </motion.li>
+                                                        ) : (
+                                                            <p className="text-gray-500">Nenhum pagamento registrado.</p>
+                                                        )}
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </motion.div>
                                     ))}
-                                </motion.ul>
+                                </AnimatePresence>
+                                <ReactPaginate
+                                    previousLabel={'Anterior'}
+                                    nextLabel={'Próximo'}
+                                    breakLabel={'...'}
+                                    pageCount={pageCount}
+                                    marginPagesDisplayed={2}
+                                    pageRangeDisplayed={5}
+                                    onPageChange={handlePageChange}
+                                    containerClassName={'pagination flex flex-wrap justify-center mt-8 space-x-2'}
+                                    pageClassName={'pagination-item'}
+                                    pageLinkClassName={'w-full h-full flex items-center justify-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50'}
+                                    previousClassName={'pagination-item'}
+                                    previousLinkClassName={'w-full h-full flex items-center justify-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-l-md'}
+                                    nextClassName={'pagination-item'}
+                                    nextLinkClassName={'w-full h-full flex items-center justify-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-r-md'}
+                                    breakClassName={'pagination-item'}
+                                    breakLinkClassName={'w-full h-full flex items-center justify-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50'}
+                                    activeClassName={'active'}
+                                    activeLinkClassName={'bg-orange-500 border-orange-500 hover:bg-orange-600'}
+                                />
+                            </>
+                        ) : (
+                            <NoClientsMessage onAddClient={() => router.push('/register')} />
+                        )}
+                    </div>
+                </main>
+            </motion.div>
 
-                            ) : (
-                                <p className="text-gray-500">Nenhum usuário encontrado.</p>
-                            )}
-                            <div className="flex justify-center mt-4">
-                                {Array.from({ length: Math.ceil(filteredUsers.length / usersPerPage) }).map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => paginate(index + 1)}
-                                        className={`mx-1 px-3 py-1 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300 
-                                    ${currentPage === index + 1 ? 'bg-orange-500 text-white' : 'bg-transparent text-orange-500 border border-orange-500'} 
-                                    hover:bg-orange-600 hover:text-white`}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                ))}
-                            </div>
-                        </motion.div>
+            <style jsx global>{`
+                .pagination-item {
+                    display: inline-block;
+                    user-select: none;
+                }
 
-                        <motion.div
-                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl mt-8 flex flex-col items-center"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <h2 className="text-xl font-semibold mb-4 text-gray-800">Calendário</h2>
-                            <Calendar
-                                onChange={handleDateChange}
-                                value={date}
-                                tileContent={({ date, view }) => view === 'month' && getEventTitle(date) && (
-                                    <div className="flex items-center justify-center w-full h-full">
-                                        <div
-                                            className="bg-yellow-400 rounded-full w-6 h-6 cursor-pointer mb-2"
-                                            onClick={() => openModal(date)}
-                                        />
-                                    </div>
-                                )}
-                                className="rounded-lg border border-gray-300"
-                            />
-                        </motion.div>
+                .pagination-item a {
+                    cursor: pointer;
+                    border-radius: 0.375rem;
+                    transition: all 0.2s ease-in-out;
+                }
 
-                        <EventDetailsModal modalIsOpen={modalIsOpen} setModalIsOpen={setModalIsOpen} modalEvents={modalEvents} />
-                    </main>
-                    <motion.button
-                        onClick={handleBackClick}
-                        className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        Voltar
-                    </motion.button>
-                </div>
-            )
-            }
+                .pagination-item.active a {
+                    font-weight: 600;
+                }
 
-        </AuthRoute >
+                .pagination-item:not(.break) a:hover {
+                    z-index: 2;
+                    color: #fff;
+                    background-color: #f97316;
+                    border-color: #f97316;
+                }
+
+                .pagination-item.disabled a {
+                    color: #9ca3af;
+                    pointer-events: none;
+                    background-color: #fff;
+                    border-color: #e5e7eb;
+                }
+
+                .pagination-item:first-child a {
+                    border-top-left-radius: 0.375rem;
+                    border-bottom-left-radius: 0.375rem;
+                }
+
+                .pagination-item:last-child a {
+                    border-top-right-radius: 0.375rem;
+                    border-bottom-right-radius: 0.375rem;
+                }
+
+                .user-card-transition {
+                    transition: all 0.3s ease-in-out;
+                }
+            `}</style>
+        </AuthRoute>
     );
 }

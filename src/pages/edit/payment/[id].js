@@ -5,6 +5,7 @@ import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
 import AuthRoute from '../../../../src/AuthRoute';
 import { motion } from 'framer-motion';
 import Header from '@/Header';
+import { FaUser, FaCalendarAlt, FaCreditCard } from 'react-icons/fa';
 
 export default function EditPayment() {
     const router = useRouter();
@@ -88,102 +89,89 @@ export default function EditPayment() {
         <AuthRoute>
             <div className="min-h-screen flex flex-col bg-gray-100">
                 <Header />
-                <main className="flex-grow flex items-center justify-center p-4">
+                <main className="flex-grow flex items-center justify-center px-4 py-8 bg-gradient-to-b from-orange-50 to-red-50">
                     <motion.div
-                        className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md"
+                        className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md"
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
+                        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+                            Editar Pagamento
+                        </h1>
                         {payment ? (
-                            <motion.form
-                                onSubmit={handleSubmit}
-                                className="space-y-4"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                            >
-                                <motion.select
-                                    value={userId}
-                                    onChange={(e) => setUserId(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.1 }}
-                                    whileFocus={{ scale: 1.05 }}
-                                >
-                                    <option value="">Selecione um Usuário</option>
-                                    {users.map(user => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.name} ({user.email})
-                                        </option>
-                                    ))}
-                                </motion.select>
-                                <motion.input
-                                    type="date"
-                                    placeholder="Data de Pagamento"
-                                    value={paymentDate}
-                                    onChange={(e) => setPaymentDate(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.1 }}
-                                    whileFocus={{ scale: 1.05 }}
-                                />
-                                <motion.input
-                                    type="date"
-                                    placeholder="Data de Vencimento"
-                                    value={expirationDate}
-                                    readOnly
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 bg-gray-200"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.1 }}
-                                    whileFocus={{ scale: 1.05 }}
-                                />
-                                <motion.select
-                                    value={paymentMethod}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: 0.1 }}
-                                    whileFocus={{ scale: 1.05 }}
-                                >
-                                    <option value="">Selecione o Meio de Pagamento</option>
-                                    <option value="Dinheiro">Dinheiro</option>
-                                    <option value="Pix">Pix</option>
-                                    <option value="Cartão">Cartão</option>
-                                    <option value="Outro">Outro</option>
-                                </motion.select>
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                <div className="relative">
+                                    <FaUser className="absolute top-3 left-3 text-gray-400" />
+                                    <select
+                                        value={userId}
+                                        onChange={(e) => setUserId(e.target.value)}
+                                        required
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    >
+                                        <option value="">Selecione um Usuário</option>
+                                        {users.map(user => (
+                                            <option key={user.id} value={user.id}>
+                                                {user.name} ({user.email})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="relative">
+                                    <FaCalendarAlt className="absolute top-3 left-3 text-gray-400" />
+                                    <input
+                                        type="date"
+                                        placeholder="Data de Pagamento"
+                                        value={paymentDate}
+                                        onChange={(e) => setPaymentDate(e.target.value)}
+                                        required
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <FaCalendarAlt className="absolute top-3 left-3 text-gray-400" />
+                                    <input
+                                        type="date"
+                                        placeholder="Data de Vencimento"
+                                        value={expirationDate}
+                                        readOnly
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-200"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <FaCreditCard className="absolute top-3 left-3 text-gray-400" />
+                                    <select
+                                        value={paymentMethod}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                        required
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    >
+                                        <option value="">Selecione o Meio de Pagamento</option>
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="Pix">Pix</option>
+                                        <option value="Cartão">Cartão</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
                                 <motion.button
                                     type="submit"
-                                    className="w-full py-2 px-4 bg-yellow-500 text-black rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                    className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-md shadow-md hover:from-orange-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors duration-300"
                                     whileHover={{ scale: 1.05 }}
-                                    transition={{ duration: 0.3 }}
+                                    whileTap={{ scale: 0.95 }}
                                 >
                                     Atualizar Pagamento
                                 </motion.button>
-                            </motion.form>
+                            </form>
                         ) : (
-                            <motion.p
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.5 }}
-                            >
-                                Carregando...
-                            </motion.p>
+                            <p className="text-center text-gray-600">Carregando...</p>
                         )}
                     </motion.div>
                 </main>
                 <motion.button
                     onClick={handleBackClick}
-                    className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
+                    className="fixed bottom-4 right-4 bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-2 rounded-full hover:from-orange-600 hover:to-red-700 shadow-md"
                     whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
+                    whileTap={{ scale: 0.95 }}
                 >
                     Voltar
                 </motion.button>

@@ -6,6 +6,7 @@ import AuthRoute from '../../../../src/AuthRoute';
 import { motion } from 'framer-motion';
 import ReactInputMask from 'react-input-mask';
 import Header from '@/Header';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 
 export default function EditUser() {
     const router = useRouter();
@@ -64,81 +65,67 @@ export default function EditUser() {
         <AuthRoute>
             <div className="min-h-screen flex flex-col bg-gray-100">
                 <Header />
-                <main className="flex-grow flex items-center justify-center px-4">
+                <main className="flex-grow flex items-center justify-center px-4 py-8 bg-gradient-to-b from-orange-50 to-red-50">
                     <motion.div
-                        className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md"
+                        className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md"
                         initial={{ opacity: 0, y: 50 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <motion.h1
-                            className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center text-black"
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
+                        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
                             Editar Usuário
-                        </motion.h1>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <motion.input
-                                type="text"
-                                placeholder="Nome"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3 }}
-                                whileFocus={{ scale: 1.05 }}
-                            />
-                            <motion.input
-                                type="email"
-                                placeholder="Email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: 0.1 }}
-                                whileFocus={{ scale: 1.05 }}
-                            />
-
-                            <motion.div
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: 0.2 }}
-                                whileFocus={{ scale: 1.05 }}
-                            >
+                        </h1>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="relative">
+                                <FaUser className="absolute top-3 left-3 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Nome completo"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                />
+                            </div>
+                            <div className="relative">
+                                <FaEnvelope className="absolute top-3 left-3 text-gray-400" />
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                />
+                            </div>
+                            <div className="relative">
+                                <FaPhone className="absolute top-3 left-3 text-gray-400" />
                                 <ReactInputMask
                                     mask="(99) 99999-9999"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                 >
-                                    {(inputProps) => <motion.input {...inputProps} type="tel" placeholder="Telefone" />}
+                                    {(inputProps) => <input {...inputProps} type="tel" placeholder="Telefone" />}
                                 </ReactInputMask>
-                            </motion.div>
-
-                            <motion.select
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: 0.3 }}
-                                whileFocus={{ scale: 1.05 }}
-                            >
-                                <option value="" disabled>Selecione a cidade</option>
-                                <option value="São João das Duas Pontes">São João das Duas Pontes</option>
-                                <option value="Pontalinda">Pontalinda</option>
-                            </motion.select>
+                            </div>
+                            <div className="relative">
+                                <FaMapMarkerAlt className="absolute top-3 left-3 text-gray-400" />
+                                <select
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    required
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                >
+                                    <option value="" disabled>Selecione a cidade</option>
+                                    <option value="São João das Duas Pontes">São João das Duas Pontes</option>
+                                    <option value="Pontalinda">Pontalinda</option>
+                                </select>
+                            </div>
                             <motion.button
                                 type="submit"
-                                className="w-full py-2 px-4 bg-yellow-500 hover:bg-yellow-600 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                                className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-md shadow-md hover:from-orange-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors duration-300"
                                 whileHover={{ scale: 1.05 }}
-                                transition={{ duration: 0.3 }}
+                                whileTap={{ scale: 0.95 }}
                             >
                                 Atualizar Usuário
                             </motion.button>
@@ -147,9 +134,9 @@ export default function EditUser() {
                 </main>
                 <motion.button
                     onClick={handleBackClick}
-                    className="fixed bottom-4 right-4 bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-600"
+                    className="fixed bottom-4 right-4 bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-2 rounded-full hover:from-orange-600 hover:to-red-700 shadow-md"
                     whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
+                    whileTap={{ scale: 0.95 }}
                 >
                     Voltar
                 </motion.button>
