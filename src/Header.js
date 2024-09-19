@@ -20,14 +20,8 @@ export default function Header() {
                         className="object-contain cursor-pointer"
                     />
                 </Link>
-                <div className="hidden md:flex items-center space-x-4">
-                    <LogoutButton className="bg-white text-orange-500 px-4 py-2 rounded-full font-semibold hover:bg-orange-100 transition-colors duration-300 flex items-center">
-                        <FaSignOutAlt className="mr-2" />
-                        Sair
-                    </LogoutButton>
-                </div>
                 <button 
-                    className="md:hidden text-white"
+                    className="text-white"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
                     {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
@@ -36,7 +30,7 @@ export default function Header() {
             <AnimatePresence>
                 {isMenuOpen && (
                     <motion.div 
-                        className="md:hidden mt-4"
+                        className="mt-4"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
