@@ -7,6 +7,7 @@ import Header from '@/Header';
 import { motion } from 'framer-motion';
 import Select from 'react-select';
 import { FaCalendarAlt, FaCreditCard } from 'react-icons/fa';
+import DateInput from './components/DateInput'; // Importando o novo componente
 
 export default function Payments() {
     const [users, setUsers] = useState([]);
@@ -94,27 +95,12 @@ export default function Payments() {
                                     classNamePrefix="react-select"
                                 />
                             </div>
-                            <div className="relative">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Data de Pagamento</label>
-                                <FaCalendarAlt className="absolute top-9 left-3 text-gray-400" />
-                                <input
-                                    type="date"
-                                    value={paymentDate}
-                                    onChange={(e) => setPaymentDate(e.target.value)}
-                                    required
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                />
-                            </div>
-                            <div className="relative">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Data de Vencimento</label>
-                                <FaCalendarAlt className="absolute top-9 left-3 text-gray-400" />
-                                <input
-                                    type="date"
-                                    value={expirationDate}
-                                    readOnly
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
-                                />
-                            </div>
+                            <DateInput 
+                                paymentDate={paymentDate} 
+                                setPaymentDate={setPaymentDate} 
+                                setExpirationDate={setExpirationDate} 
+                                expirationDate={expirationDate} // Passando expirationDate como prop
+                            />
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pagamento</label>
                                 <Select

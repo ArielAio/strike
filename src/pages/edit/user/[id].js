@@ -80,7 +80,7 @@ export default function EditUser() {
                                 <FaUser className="absolute top-3 left-3 text-gray-400" />
                                 <input
                                     type="text"
-                                    placeholder="Nome completo"
+                                    placeholder="Nome completo *"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     required
@@ -91,7 +91,7 @@ export default function EditUser() {
                                 <FaEnvelope className="absolute top-3 left-3 text-gray-400" />
                                 <input
                                     type="email"
-                                    placeholder="Email"
+                                    placeholder="Email (opcional)"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -105,7 +105,8 @@ export default function EditUser() {
                                     onChange={(e) => setPhone(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                 >
-                                    {(inputProps) => <input {...inputProps} type="tel" placeholder="Telefone" />}
+                                    {(inputProps) => <input {...inputProps} type="tel" 
+                                    placeholder="Telefone (opcional)" />}
                                 </ReactInputMask>
                             </div>
                             <div className="relative">
@@ -116,7 +117,7 @@ export default function EditUser() {
                                     required
                                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                                 >
-                                    <option value="" disabled>Selecione a cidade</option>
+                                    <option value="" disabled>Selecione a cidade *</option>
                                     <option value="São João das Duas Pontes">São João das Duas Pontes</option>
                                     <option value="Pontalinda">Pontalinda</option>
                                 </select>

@@ -257,7 +257,24 @@ export default function List() {
                                         >
                                             <div className="p-4 md:p-6">
                                                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-                                                    <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-2 md:mb-0">{user.name}</h2>
+                                                    <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-2 md:mb-0">
+                                                        {user.name} 
+                                                        {user.payments.length > 0 && (
+                                                            <span className="text-sm text-gray-500">
+                                                                {' '} {/* Adicionado espaço aqui */}
+                                                                {(() => {
+                                                                    const daysRemaining = Math.ceil((new Date(user.payments[0].expirationDate) - new Date()) / (1000 * 60 * 60 * 24));
+                                                                    if (daysRemaining < 0) {
+                                                                        return '(Atrasado)';
+                                                                    } else if (daysRemaining === 0) {
+                                                                        return '(Hoje)';
+                                                                    } else {
+                                                                        return `(Vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'})`;
+                                                                    }
+                                                                })()}
+                                                            </span>
+                                                        )}
+                                                    </h2>
                                                     <div className="flex space-x-2">
                                                         <button
                                                             onClick={() => router.push(`/edit/user/${user.id}`)}
@@ -300,31 +317,36 @@ export default function List() {
                                                         <h3 className="font-semibold text-lg mb-4">Histórico de Pagamentos</h3>
                                                         {user.payments.length > 0 ? (
                                                             <ul className="space-y-4">
-                                                                {user.payments.map((payment) => (
-                                                                    <li key={payment.id} className="bg-gray-50 p-4 rounded-md flex flex-col md:flex-row justify-between items-start md:items-center">
-                                                                        <div className="mb-2 md:mb-0">
-                                                                            <p className="font-semibold">Data de Pagamento: {new Date(payment.paymentDate).toLocaleDateString()}</p>
-                                                                            <p>Data de Vencimento: {new Date(payment.expirationDate).toLocaleDateString()}</p>
-                                                                            <p>Método: {payment.paymentMethod}</p>
-                                                                        </div>
-                                                                        <div className="flex space-x-2">
-                                                                            <button
-                                                                                onClick={() => router.push(`/edit/payment/${payment.id}`)}
-                                                                                className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200"
-                                                                                title="Editar pagamento"
-                                                                            >
-                                                                                <FaEdit size={14} />
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => deletePayment(payment.id, user.id)}
-                                                                                className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
-                                                                                title="Deletar pagamento"
-                                                                            >
-                                                                                <FaTrash size={14} />
-                                                                            </button>
-                                                                        </div>
-                                                                    </li>
-                                                                ))}
+                                                                {user.payments.map((payment) => {
+                                                                    const expiration = new Date(payment.expirationDate);
+                                                                    const daysRemaining = Math.ceil((expiration - new Date()) / (1000 * 60 * 60 * 24));
+                                                                    return (
+                                                                        <li key={payment.id} className="bg-gray-50 p-4 rounded-md flex flex-col md:flex-row justify-between items-start md:items-center">
+                                                                            <div className="mb-2 md:mb-0">
+                                                                                <p className="font-semibold">Data de Pagamento: {new Date(payment.paymentDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</p>
+                                                                                <p>Data de Vencimento: {new Date(payment.expirationDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</p>
+                                                                                <p>Método: {payment.paymentMethod}</p>
+                                                                                <p className="font-semibold">Dias restantes: {daysRemaining} {daysRemaining === 1 ? 'dia' : 'dias'}</p> {/* Adicionado aqui */}
+                                                                            </div>
+                                                                            <div className="flex space-x-2">
+                                                                                <button
+                                                                                    onClick={() => router.push(`/edit/payment/${payment.id}`)}
+                                                                                    className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200"
+                                                                                    title="Editar pagamento"
+                                                                                >
+                                                                                    <FaEdit size={14} />
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => deletePayment(payment.id, user.id)}
+                                                                                    className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200"
+                                                                                    title="Deletar pagamento"
+                                                                                >
+                                                                                    <FaTrash size={14} />
+                                                                                </button>
+                                                                            </div>
+                                                                        </li>
+                                                                    );
+                                                                })}
                                                             </ul>
                                                         ) : (
                                                             <p className="text-gray-500">Nenhum pagamento registrado.</p>

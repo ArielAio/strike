@@ -112,7 +112,7 @@ export default function EditPayment() {
                                         <option value="">Selecione um Usuário</option>
                                         {users.map(user => (
                                             <option key={user.id} value={user.id}>
-                                                {user.name} ({user.email})
+                                                {user.name}
                                             </option>
                                         ))}
                                     </select>
